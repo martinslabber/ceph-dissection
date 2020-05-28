@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-install_requires = ["aiohttp", "aiopg[sa]", "aiohttp-jinja2", "arrow"]
+install_requires = ["aiohttp", "aiopg[sa]", "aiohttp-jinja2", "arrow", "configargparse"]
 
 setup(
     name="cephdissectionserver",
