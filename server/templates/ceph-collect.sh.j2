@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Run the following on a Ceph node where "ceph status" works.
+#
+FSID=$(ceph fsid)
+NAME="ceph-${FSID}-$(date "+%s")"
+DIR="/tmp/${NAME}-temp-working-directory"
+OUTFILE="/tmp/${NAME}-viz.tar.bz2"
+mkdir -p $DIR
+cd $DIR
+ceph version -f json > version.json
+ceph status -f json > status.json
+ceph report > report.json
+ceph service dump -f json > service.json
+ceph osd tree -f json > osd-tree.json
+ceph osd pool ls detail -f json > osd-pool.json
+ceph osd df -f json > osd-df.json
+ceph osd dump -f json > osd-dump.json
+ceph pg ls -f json > pg-ls.json
+ceph osd pool ls detail > osd-pool.txt
+ceph osd getmap -o /tmp/osdmap && osdmaptool /tmp/osdmap --dump --format=json > osd_getmap.json
+# The system document contains some information about where and when data was collected
+echo "{" > system.json
+echo "\"hostname\": \"$(hostname -f)\"," >> system.json
+echo "\"fsid\": \"$FSID\"" >> system.json
+echo "}" >> system.json
+tar cjvf $OUTFILE *.json *.txt
+cd /tmp
+rm -r $DIR
+echo "Collection stored in $OUTFILE"
+curl -F "datafile=@${OUTFILE}" {{ url }}
